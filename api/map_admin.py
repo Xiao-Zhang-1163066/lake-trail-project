@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from typing import Any
-from database import db_enabled, db_fetch_one, db_execute, get_db_connection
+from repositories.core import db_enabled, db_fetch_one, db_execute, get_db_connection
 
 
 class MapAdminError(RuntimeError):

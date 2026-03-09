@@ -2,20 +2,26 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import { useAuth } from "../contexts/AuthContext";
+import { getAssetUrl } from "../utils/mapEditor/assetUrl";
+import {
+  cloneGeoJSON,
+  hasCoordinates,
+  mergeGeoJsonItems,
+} from "../utils/mapEditor/geojson";
+import { buildTrailLegendItems } from "../utils/mapEditor/trailLegend";
+import { createMarkerIcon } from "../utils/mapEditor/markerIcon";
+import {
+  fetchPublicMapData,
+  removePoi,
+  removeTrail,
+  upsertPoi,
+  upsertTrail,
+} from "../services/mapAdminApi";
 import {
   DEFAULT_TRAIL_STATUS,
   TRAIL_STATUS_OPTIONS,
   getStatusStyle,
 } from "../constants/trailStatuses";
-
-const API_BASE =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "/api";
-
-// Helper function to get asset URL with correct base path
-const getAssetUrl = (path) => {
-  const base = import.meta.env.BASE_URL || "/";
-  return `${base}${path.startsWith("/") ? path.slice(1) : path}`;
-};
 
 // Category colors
 const categoryColors = {
@@ -29,46 +35,6 @@ const categoryColors = {
   restroom: "#14b8a6", // Public Amenities
 };
 
-const buildTrailLegendItems = (segments = []) => {
-  const itemsByStatus = new Map();
-
-  segments.forEach((segment) => {
-    if (!segment || segment.isPublic === false) return;
-
-    const status = segment.status;
-    if (!status || itemsByStatus.has(status)) return;
-
-    const defaultStyle = getStatusStyle(status) || {};
-    const segmentStyle = segment.style || {};
-
-    itemsByStatus.set(status, {
-      id: status,
-      label:
-        segment.legendLabel ||
-        segment.statusLabel ||
-        defaultStyle.label ||
-        segment.name ||
-        "Trail",
-      color: segmentStyle.color || defaultStyle.color || "#3B82F6",
-      dashArray: segmentStyle.dashArray ?? defaultStyle.dashArray ?? null,
-    });
-  });
-
-  const orderedItems = [];
-
-  TRAIL_STATUS_OPTIONS.forEach(({ value }) => {
-    if (itemsByStatus.has(value)) {
-      orderedItems.push(itemsByStatus.get(value));
-      itemsByStatus.delete(value);
-    }
-  });
-
-  itemsByStatus.forEach((item) => {
-    orderedItems.push(item);
-  });
-
-  return orderedItems;
-};
 
 export default function InteractiveMapEditor() {
   const { token, handleSessionExpired } = useAuth();
@@ -125,66 +91,7 @@ export default function InteractiveMapEditor() {
   }, [categories]);
   const resolveCategoryLabel = (value) =>
     categoryLabelMap[value] || categoryLabelMap[String(value)] || value || "—";
-  const normalizeFeature = (input) => {
-    if (!input) return null;
-    if (input.type === "Feature") {
-      return {
-        type: "Feature",
-        geometry: input.geometry ? { ...input.geometry } : null,
-        properties: { ...(input.properties || {}) },
-      };
-    }
-    if (input.type === "FeatureCollection") {
-      const features = (input.features || [])
-        .map(normalizeFeature)
-        .filter(Boolean);
-      return { type: "FeatureCollection", features };
-    }
-    if (input.type && input.coordinates) {
-      return {
-        type: "Feature",
-        geometry: { type: input.type, coordinates: input.coordinates },
-        properties: {},
-      };
-    }
-    return null;
-  };
 
-  const mergeGeoJsonItems = (items) => {
-    const features = [];
-    items.forEach((item) => {
-      const normalized = normalizeFeature(item);
-      if (!normalized) return;
-      if (normalized.type === "FeatureCollection") {
-        (normalized.features || []).forEach((feat) => {
-          if (feat) features.push(feat);
-        });
-      } else {
-        features.push(normalized);
-      }
-    });
-
-    if (features.length === 0) {
-      return null;
-    }
-    if (features.length === 1) {
-      return features[0];
-    }
-    return {
-      type: "FeatureCollection",
-      features,
-    };
-  };
-
-  const cloneGeoJSON = (data) => {
-    if (!data) return null;
-    try {
-      return JSON.parse(JSON.stringify(data));
-    } catch (error) {
-      console.warn("Failed to clone GeoJSON payload", error);
-      return data;
-    }
-  };
   const setTrailGeometry = (geojson) => {
     const normalized = cloneGeoJSON(geojson);
     if (drawnLayersRef.current) {
@@ -670,13 +577,7 @@ export default function InteractiveMapEditor() {
   const loadMapData = async () => {
     try {
       setLoading(true);
-      const [poisRes, trailsRes] = await Promise.all([
-        fetch(`${API_BASE}/public/pois`),
-        fetch(`${API_BASE}/public/trails`),
-      ]);
-
-      const poisData = await poisRes.json();
-      const trailsData = await trailsRes.json();
+      const { poisData, trailsData } = await fetchPublicMapData();
 
       setPois(poisData.pois || []);
       const segments = trailsData.segments || [];
@@ -755,41 +656,6 @@ export default function InteractiveMapEditor() {
     }
   }, [trails, activeTrail]);
 
-  // Create custom marker icon with SVG
-  const createMarkerIcon = (L, iconPath, accent) => {
-    const safeAccent = accent || "#1fa74d";
-    const safeIconPath =
-      iconPath || getAssetUrl("/assets/icons/categories/default.svg");
-    return L.divIcon({
-      html: `
-        <div class="poi-marker-container" style="
-          width: 44px;
-          height: 44px;
-          background: white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 3px solid ${safeAccent};
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        ">
-          <img 
-            src="${safeIconPath}" 
-            alt="POI" 
-            style="width: 24px; height: 24px;"
-            onerror="this.src='${getAssetUrl(
-              "/assets/icons/categories/default.svg"
-            )}'"
-          />
-        </div>
-      `,
-      className: "custom-div-icon",
-      iconSize: [44, 44],
-      iconAnchor: [22, 22],
-      popupAnchor: [0, -22],
-    });
-  };
-
   // Render POIs and Trails on map
   useEffect(() => {
     if (!mapInstanceRef.current) return;
@@ -845,40 +711,6 @@ export default function InteractiveMapEditor() {
           drawnLayersRef.current.getLayers().length
         );
       }
-
-      const hasCoordinates = (geojson) => {
-        if (!geojson) return false;
-
-        const type = geojson.type;
-
-        if (type === "FeatureCollection") {
-          return Array.isArray(geojson.features)
-            ? geojson.features.some((feature) => hasCoordinates(feature))
-            : false;
-        }
-
-        if (type === "Feature") {
-          return hasCoordinates(geojson.geometry);
-        }
-
-        if (type === "GeometryCollection") {
-          return Array.isArray(geojson.geometries)
-            ? geojson.geometries.some((geometry) => hasCoordinates(geometry))
-            : false;
-        }
-
-        if (
-          (type === "LineString" ||
-            type === "MultiLineString" ||
-            type === "Polygon" ||
-            type === "MultiPolygon") &&
-          Array.isArray(geojson.coordinates)
-        ) {
-          return geojson.coordinates.length > 0;
-        }
-
-        return false;
-      };
 
       // Render trails
       trails.forEach((trail) => {
@@ -993,7 +825,12 @@ export default function InteractiveMapEditor() {
           getAssetUrl("/assets/icons/categories/default.svg");
 
         const marker = L.marker([poi.lat, poi.lng], {
-          icon: createMarkerIcon(L, iconPath, accent),
+          icon: createMarkerIcon(
+            L,
+            iconPath,
+            accent,
+            getAssetUrl("/assets/icons/categories/default.svg")
+          ),
           title: poi.name,
           riseOnHover: true,
         }).addTo(map);
@@ -1146,40 +983,18 @@ export default function InteractiveMapEditor() {
     };
 
     const isUpdating = Boolean(editingTrailId);
-    const endpoint = isUpdating
-      ? `${API_BASE}/map/admin/trails/${editingTrailId}`
-      : `${API_BASE}/map/admin/trails`;
-    const method = isUpdating ? "PUT" : "POST";
 
     if (!isUpdating) {
       payload.sort_index = 0;
     }
 
     try {
-      const response = await fetch(endpoint, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-Portal-Authorization": `Bearer ${token}`,
-          "X-Auth-Token": token,
-        },
-        body: JSON.stringify(payload),
+      const result = await upsertTrail({
+        token,
+        payload,
+        trailId: editingTrailId,
+        onUnauthorized: handleSessionExpired,
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-
-        if (response.status === 401) {
-          handleSessionExpired();
-          return;
-        }
-
-        throw new Error(errorText || `HTTP ${response.status}`);
-      }
-
-      const result = await response.json();
       const name = result.trail?.name || formData.name;
       const verb = isUpdating ? "updated" : "created";
 
@@ -1226,36 +1041,14 @@ export default function InteractiveMapEditor() {
     };
 
     const isEditingExisting = Boolean(editingPoiId);
-    const endpoint = isEditingExisting
-      ? `${API_BASE}/map/admin/pois/${editingPoiId}`
-      : `${API_BASE}/map/admin/pois`;
-    const method = isEditingExisting ? "PUT" : "POST";
 
     try {
-      const response = await fetch(endpoint, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-Portal-Authorization": `Bearer ${token}`,
-          "X-Auth-Token": token,
-        },
-        body: JSON.stringify(payload),
+      const result = await upsertPoi({
+        token,
+        payload,
+        poiId: editingPoiId,
+        onUnauthorized: handleSessionExpired,
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-
-        if (response.status === 401) {
-          handleSessionExpired();
-          return;
-        }
-
-        throw new Error(errorText || `HTTP ${response.status}`);
-      }
-
-      const result = await response.json();
       const verb = isEditingExisting ? "updated" : "created";
       const name = result.poi?.name || formData.name;
       alert(`POI "${name}" ${verb} successfully!`);
@@ -1326,26 +1119,11 @@ export default function InteractiveMapEditor() {
     setTrailDeletingId(trail.id);
 
     try {
-      const response = await fetch(`${API_BASE}/map/admin/trails/${trail.id}`, {
-        method: "DELETE",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-Portal-Authorization": `Bearer ${token}`,
-          "X-Auth-Token": token,
-        },
+      await removeTrail({
+        token,
+        trailId: trail.id,
+        onUnauthorized: handleSessionExpired,
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-
-        if (response.status === 401) {
-          handleSessionExpired();
-          return;
-        }
-
-        throw new Error(errorText || `HTTP ${response.status}`);
-      }
 
       alert(`Trail "${trail.name}" deleted successfully.`);
       setActiveTrail(null);
@@ -1421,24 +1199,11 @@ export default function InteractiveMapEditor() {
 
     setPoiDeletingId(poi.id);
     try {
-      const response = await fetch(`${API_BASE}/map/admin/pois/${poi.id}`, {
-        method: "DELETE",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-Portal-Authorization": `Bearer ${token}`,
-          "X-Auth-Token": token,
-        },
+      await removePoi({
+        token,
+        poiId: poi.id,
+        onUnauthorized: handleSessionExpired,
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        if (response.status === 401) {
-          handleSessionExpired();
-          return;
-        }
-        throw new Error(errorText || `HTTP ${response.status}`);
-      }
 
       alert(`POI "${poi.name}" deleted successfully.`);
       await loadMapData();

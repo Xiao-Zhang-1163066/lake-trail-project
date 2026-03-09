@@ -12,8 +12,8 @@ from config import (
 )
 from auth import get_current_admin
 from utils import text_response, normalize_email
-from database import (
-    db_enabled,
+from repositories.core import db_enabled
+from repositories.volunteers import (
     list_volunteer_registrations,
     create_volunteer_registration,
     find_volunteer_registration_by_email,

@@ -6,7 +6,7 @@ import json
 from decimal import Decimal
 from typing import Any
 
-from database import db_enabled, db_fetch_all
+from repositories.core import db_enabled, db_fetch_all
 
 
 class MapDataError(RuntimeError):

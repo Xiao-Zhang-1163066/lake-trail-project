@@ -2,7 +2,7 @@
 
 ## Overview
 
-Te Waihora Trail is a community project combining a public-facing marketing site, an administrative portal, and a serverless API. The portal lets authorised staff manage trail geometry (GeoJSON), points of interest, volunteer events, newsletter content, and gallery media. The backend is built with Azure Functions (Python) and persists data in a Supabase Postgres instance and Azure Blob/Supabase storage.
+Te Waihora Trail is a community project combining a public-facing marketing site, an administrative portal, and a serverless API. The portal lets authorised staff manage trail geometry (GeoJSON), points of interest, volunteer events, newsletter content, and gallery media. The backend is FastAPI hosted on Azure Functions (ASGI) and persists data in a Supabase Postgres instance and Azure Blob/Supabase storage.
 
 ## Repository layout
 
@@ -22,7 +22,7 @@ Te Waihora Trail is a community project combining a public-facing marketing site
 
 ## Getting started
 
-### 1. Backend API (Azure Functions)
+### 1. Backend API (FastAPI on Azure Functions)
 
 ```bash
 python3.10 -m venv .venv

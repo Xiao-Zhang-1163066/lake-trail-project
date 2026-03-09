@@ -1,5 +1,7 @@
 # Azure Functions Runtime
 azure-functions==1.20.0
+fastapi==0.115.5
+uvicorn==0.32.0
 
 # Database (PostgreSQL)
 psycopg[binary]==3.1.19
