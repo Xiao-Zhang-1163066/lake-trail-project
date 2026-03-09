@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="70" viewBox="0 0 48 70">
+  <defs>
+    <linearGradient id="tempPoiGradient" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  <path
+    d="M24 0C12.318 0 2.8 9.67 2.8 21.6c0 15.518 19.323 38.08 19.94 38.8.722.857 1.778.857 2.5 0 .617-.72 19.96-23.282 19.96-38.8C44.2 9.67 34.682 0 24 0Z"
+    fill="url(#tempPoiGradient)"/>
+  <circle cx="24" cy="22" r="8" fill="#fff"/>
+</svg>

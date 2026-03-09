@@ -1,0 +1,38 @@
+[
+  {
+    "id": "boardwalk-progress",
+    "blob": "update1.jpg",
+    "url": "/gallery-media/update1.jpg",
+    "filename": "update1.jpg",
+    "contentType": "image/jpeg",
+    "caption": "Boardwalk progress",
+    "uploader": "Community Team",
+    "source": "admin",
+    "approved": true,
+    "uploadedAt": "2025-10-02T12:10:00Z"
+  },
+  {
+    "id": "volunteer-planting",
+    "blob": "update2.jpg",
+    "url": "/gallery-media/update2.jpg",
+    "filename": "update2.jpg",
+    "contentType": "image/jpeg",
+    "caption": "Volunteer planting day",
+    "uploader": "Community Team",
+    "source": "admin",
+    "approved": true,
+    "uploadedAt": "2025-10-02T12:11:00Z"
+  },
+  {
+    "id": "8f71a513-5b7f-46dc-a620-f4da922a3ac2",
+    "blob": "8f71a513-5b7f-46dc-a620-f4da922a3ac2.jpg",
+    "url": "/gallery-media/8f71a513-5b7f-46dc-a620-f4da922a3ac2.jpg",
+    "filename": "update1.jpg",
+    "contentType": "image/jpeg",
+    "caption": "volunteer",
+    "uploader": "",
+    "source": "admin",
+    "approved": true,
+    "uploadedAt": "2025-10-08T02:49:30.962837Z"
+  }
+]

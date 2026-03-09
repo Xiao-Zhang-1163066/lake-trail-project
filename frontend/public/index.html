@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Te Waihora Trail – Connecting Community to Te Waihora</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/main.css" />
+  </head>
+  <body class="home-page">
+    <section class="hero">
+      <div class="hero__background" aria-hidden="true"></div>
+      <div class="hero__layer">
+        <div id="navbar"></div>
+        <div class="hero__content">
+          <div class="hero__eyebrow">Te Waihora Lakeside Trail</div>
+          <h1 class="hero__title">
+            Connecting Community to <span>Te Waihora</span>
+          </h1>
+          <p class="hero__subtitle">
+            A 12.5km lakeside trail celebrating our natural heritage, connecting
+            communities, and preserving the environment for the future.
+          </p>
+          <div class="hero__actions">
+            <a
+              class="cta-primary"
+              href="/donate.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Donate Now</a
+            >
+            <a class="cta-secondary" href="/get-involved.html">Get Involved</a>
+          </div>
+        </div>
+        <div class="hero__status-bar">
+          <div class="hero__status-item">
+            <div class="hero__status-label">Lake status</div>
+            <div class="hero__status-value">Closed to the sea</div>
+          </div>
+          <div class="hero__status-item">
+            <div class="hero__status-label">Latest lake level</div>
+            <div class="hero__status-value">0.83 msl</div>
+          </div>
+          <div class="hero__status-item">
+            <div class="hero__status-label">Recorded on</div>
+            <div class="hero__status-value">July 17, 2023</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section intro section--no-top">
+      <div class="intro__content">
+        <article class="intro__card">
+          <h2 class="intro__card-title">Te Waihora Lake Ellesmere</h2>
+          <p>
+            Te Waihora Lake Ellesmere, one of New Zealand’s most important
+            wetland systems, is a brackish, shallow lagoon with an average depth
+            of 1.4 m. Covering around 20,000 hectares, Te Waihora Lake Ellesmere
+            sits just to the south of Banks Peninsula, a taonga of immense
+            biodiversity, cultural heritage, and community value.
+          </p>
+          <p>
+            It is internationally significant for its wildlife habitats, with at
+            least 37 bird species breeding and 43 species of fish recorded in the
+            lake. The total number of bird species recorded to date is 167.
+          </p>
+          <a class="intro__explore" href="/map.html">Explore →</a>
+        </article>
+        <a class="intro__map" href="/map.html" aria-label="Open the interactive trail map">
+          <span class="intro__map-badge">Open Full Map →</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="section updates">
+      <div class="section__header">
+        <h2 class="section__title">Latest Updates</h2>
+        <a class="section__link" href="/latest-updates.html">See All</a>
+      </div>
+      <div class="updates__grid" data-home-updates>
+        <article class="update-card updates__placeholder">
+          <div class="update-card__body">
+            <p class="update-card__meta">Loading recent highlights…</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--compact">
+      <div class="cta-with-donate">
+        <div class="cta">
+          <div class="cta__inner">
+            <h2 class="cta__title">Be Part of Something Special</h2>
+            <p class="cta__text">
+              Join our community of volunteers, donors, and advocates working to
+              create this transformative trail for Canterbury. Your energy helps us
+              restore wetlands, build connections, and celebrate Te Waihora.
+            </p>
+            <a class="cta__button" href="/get-involved.html">Volunteer Today</a>
+          </div>
+        </div>
+        <div class="donate-preview__card donate-preview__card--compact">
+          <div class="donate-preview__text">
+            <h3 class="donate-preview__title">Support Te Waihora Trail</h3>
+            <p>
+              Donations fund planting days, predator control, track maintenance, and learning programmes
+              for rangatahi. Your generosity keeps the trail and wetlands thriving.
+            </p>
+          </div>
+          <a class="donate-preview__button donate-preview__button--outline" href="/donate.html">
+            Explore Ways to Give
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div id="footer"></div>
+
+    <script src="/assets/config.js"></script>
+    <script src="/assets/site.js"></script>
+    <script>
+      const pingButton = document.getElementById("ping");
+      if (pingButton) {
+        const resultEl = document.getElementById("result");
+        pingButton.addEventListener("click", async () => {
+          const apiBase = window.PUBLIC_CONFIG?.API_BASE || "";
+          if (!resultEl) return;
+          if (!apiBase) {
+            resultEl.textContent = "Error: API_BASE is not configured";
+            resultEl.style.color = "#c62828";
+            return;
+          }
+          resultEl.textContent = "Pinging...";
+          resultEl.style.color = "#1d2a36";
+          try {
+            const res = await fetch(`${apiBase}/api/health`);
+            const text = await res.text();
+            resultEl.textContent = `Response: ${text}`;
+            resultEl.style.color = "#1ec768";
+          } catch (err) {
+            resultEl.textContent = `Error: ${err}`;
+            resultEl.style.color = "#c62828";
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

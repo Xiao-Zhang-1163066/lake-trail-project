@@ -1,0 +1,18 @@
+{
+  "routes": [
+    { "route": "/portal/assets/*", "serve": "/portal/assets/*" },
+    { "route": "/portal/*", "rewrite": "/portal/index.html" }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/assets/*",
+      "/portal/assets/*",
+      "/gallery-media/*",
+      "/api/*"
+    ]
+  },
+  "mimeTypes": {
+    "*.json": "application/json"
+  }
+}

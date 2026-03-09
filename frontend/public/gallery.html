@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Community Gallery – Te Waihora Trail</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/main.css" />
+  </head>
+  <body class="gallery-page">
+    <div id="navbar"></div>
+
+    <main class="gallery-main">
+      <section class="gallery-intro">
+        <div class="gallery-intro__inner">
+          <div class="gallery-intro__content">
+            <span class="gallery-intro__eyebrow">Community snapshots</span>
+            <h1 class="gallery-intro__title">Te Waihora through your lens</h1>
+            <p class="gallery-intro__lead">
+              Explore photos captured by walkers, volunteers, and whānau around the lakeside trail. Fresh images are added after an admin review to keep the gallery safe for everyone.
+            </p>
+            <div class="gallery-intro__cta">
+              <span class="gallery-intro__note">
+                Visitors: email <a href="mailto:manager@wet.org.nz">manager@wet.org.nz</a> with your favourite shots.
+              </span>
+            </div>
+          </div>
+          <div class="gallery-intro__preview" aria-hidden="true">
+            <div class="gallery-preview__primary"></div>
+            <div class="gallery-preview__stack">
+              <div class="gallery-preview__thumb gallery-preview__thumb--wetland"></div>
+              <div class="gallery-preview__thumb gallery-preview__thumb--boardwalk"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="gallery-layout">
+        <div class="gallery-layout__inner">
+          <div class="gallery-feed">
+            <div class="gallery-feed__header">
+              <h2 class="gallery-feed__title">Latest photos</h2>
+              <p class="gallery-feed__meta">Scroll through community submissions and trail highlights.</p>
+            </div>
+            <div class="gallery-grid" data-gallery-grid>
+              <div class="gallery-empty">Loading community photos…</div>
+            </div>
+          </div>
+
+          <aside class="gallery-side">
+            <section class="gallery-sidecard">
+              <span class="gallery-sidecard__eyebrow">Submission tips</span>
+              <h3>Best experience for all</h3>
+              <ul>
+                <li>Use landscape photos where possible (at least 1600px wide).</li>
+                <li>Include a caption &mdash; e.g. location, time of day, or the story behind the shot.</li>
+                <li>By sharing you confirm you captured the image and have consent from any people featured.</li>
+              </ul>
+            </section>
+
+            <section class="gallery-sidecard gallery-sidecard--cta">
+              <h3>Questions?</h3>
+              <p>
+                Email <a href="mailto:manager@wet.org.nz">manager@wet.org.nz</a> if you’d like help resizing photos or removing an image.
+              </p>
+              <a class="gallery-sidecard__link" href="/contact.html">Contact the team</a>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="/assets/config.js"></script>
+    <script src="/assets/site.js"></script>
+  </body>
+</html>

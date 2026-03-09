@@ -1,0 +1,23 @@
+# Azure Functions Runtime
+azure-functions==1.20.0
+
+# Database (PostgreSQL)
+psycopg[binary]==3.1.19
+
+
+# Password hashing & Authentication
+bcrypt==4.2.0
+pyjwt==2.9.0
+
+# Azure Blob Storage (upload, download, SAS token)
+azure-storage-blob==12.20.0
+
+# Email / Notifications (可选，用于联系表单发邮件)
+sendgrid==6.11.0
+
+# Environment variable management (方便本地开发)
+python-dotenv==1.0.1
+
+# Utilities
+requests==2.*
+# requests==2.32.3

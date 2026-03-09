@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trail Map – Te Waihora Lakeside Trail</title>
+
+    <!-- Stylesheets -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="stylesheet" href="/assets/map.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;600"
+    />
+
+    <!-- Leaflet Library -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  </head>
+
+  <body class="map-page">
+    <!-- Navigation -->
+    <div id="navbar"></div>
+
+    <!-- Main Map Content -->
+    <main class="map-page">
+      <div class="map-canvas">
+        <!-- Map Container -->
+        <div id="map" role="region" aria-label="Trail map"></div>
+
+        <!-- Loading Indicator -->
+        <div class="map-loader" id="map-loader">
+          <div
+            class="spinner-border text-success spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          ></div>
+          <span>Loading map tiles…</span>
+        </div>
+
+        <!-- Map Controls Overlay -->
+        <section
+          class="map-overlay"
+          id="map-overlay"
+          aria-label="Trail map controls"
+        >
+          <aside
+            class="map-filters"
+            aria-label="Trail overview and filter options"
+            tabindex="-1"
+          >
+            <!-- Close Button (Mobile) -->
+            <button
+              class="map-overlay__close"
+              type="button"
+              id="overlay-close"
+              aria-label="Hide map filters"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true"
+                >close</span
+              >
+            </button>
+
+            <!-- Header -->
+            <header class="map-header">
+              <p class="map-header__eyebrow">Te Waihora</p>
+              <h1>Interactive Trail Map</h1>
+              <p class="map-header__lead">
+                Explore current and future sections of the Lakeside Trail,
+                discover points of interest, and plan your visit with facilities
+                and access points highlighted on the map below.
+              </p>
+            </header>
+
+            <!-- Filters Top Bar -->
+            <div class="map-filters__top">
+              <div>
+                <h2 class="map-filters__title">Activities &amp; Facilities</h2>
+                <p class="map-filters__intro" id="filters-status">
+                  Loading map data…
+                </p>
+              </div>
+              <button
+                type="button"
+                class="map-filters__toggle-all"
+                id="toggle-all"
+                aria-live="polite"
+              >
+                Turn off all
+              </button>
+            </div>
+
+            <!-- Filter Groups (Dynamic) -->
+            <div class="map-filters__scroll">
+              <div class="map-filters__groups" id="filter-groups"></div>
+            </div>
+          </aside>
+        </section>
+
+        <!-- Mobile Toggle Button -->
+        <button
+          class="map-toggle-button"
+          type="button"
+          id="toolbar-toggle"
+          aria-controls="map-overlay"
+          aria-expanded="false"
+          aria-label="Show map filters"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">map</span>
+          <span class="map-toggle-button__label">Map Filters</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="assets/config.js"></script>
+    <script src="assets/site.js"></script>
+    <script src="assets/map.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
