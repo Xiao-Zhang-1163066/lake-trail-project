@@ -57,70 +57,38 @@ def _as_str(value: Any) -> str | None:
 
 
 def fetch_public_trails() -> dict:
-    """Return trail segments with legend information."""
+    """Return trail segments. Styles are resolved on the frontend from constants."""
     _ensure_db_enabled()
 
     rows = db_fetch_all(
         """
         SELECT
-            t.id,
-            t.name,
-            t.status,
-            t.description,
-            t.legend_label,
-            t.is_public,
-            COALESCE(t.sort_index, 0) AS sort_index,
-            t.geojson,
-            s.label AS status_label,
-            s.line_color,
-            s.line_weight,
-            s.dash_array
-        FROM map_trail_segments AS t
-        JOIN map_trail_status_styles AS s ON t.status = s.status
-        ORDER BY t.sort_index ASC, t.name ASC
+            id,
+            name,
+            status,
+            description,
+            is_public,
+            COALESCE(sort_index, 0) AS sort_index,
+            geojson
+        FROM map_trail_segments
+        ORDER BY sort_index ASC, name ASC
         """
     )
 
-    segments: list[dict[str, Any]] = []
-    legend: list[dict[str, Any]] = []
-
-    for row in rows:
-        geojson = _load_json(row.get("geojson")) or {}
-
-        segment_id = _as_str(row.get("id"))
-        dash_array = row.get("dash_array")
-        style = {
-            "color": row.get("line_color"),
-            "weight": row.get("line_weight"),
-        }
-        if dash_array:
-            style["dashArray"] = dash_array
-
-        segment = {
-            "id": segment_id,
+    segments: list[dict[str, Any]] = [
+        {
+            "id": _as_str(row.get("id")),
             "name": row.get("name"),
             "status": row.get("status"),
             "description": row.get("description"),
-            "legendLabel": row.get("legend_label"),
-            "statusLabel": row.get("status_label"),
-            "style": style,
             "isPublic": row.get("is_public", True),
-            "geojson": geojson,
+            "sortIndex": row.get("sort_index", 0),
+            "geojson": _load_json(row.get("geojson")) or {},
         }
+        for row in rows
+    ]
 
-        segments.append(segment)
-
-        if segment["isPublic"]:
-            legend.append(
-                {
-                    "id": segment_id,
-                    "label": segment.get("legendLabel") or segment.get("name"),
-                    "color": style.get("color"),
-                    "dashArray": style.get("dashArray"),
-                }
-            )
-
-    return {"segments": segments, "legend": legend}
+    return {"segments": segments}
 
 
 def fetch_public_pois(category: str | None = None) -> dict:

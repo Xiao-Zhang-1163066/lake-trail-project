@@ -3,35 +3,14 @@ BEGIN;
 -- 清空旧数据，并重置主键自增
 TRUNCATE TABLE map_points_of_interest RESTART IDENTITY CASCADE;
 TRUNCATE TABLE map_poi_categories RESTART IDENTITY CASCADE;
-TRUNCATE TABLE map_trail_status_styles CASCADE;
 TRUNCATE TABLE map_trail_segments RESTART IDENTITY CASCADE;
 
--- 0) Trail status styles
-INSERT INTO map_trail_status_styles (status, label, line_color, line_weight, dash_array) VALUES
-  ('existing', 'Existing Trail', '#0f766e', 5, NULL),
-  ('stage-1', 'Stage 1', '#2563eb', 5, NULL),
-  ('stage-2', 'Stage 2', '#2563eb', 5, '8 6')
-ON CONFLICT (status) DO UPDATE SET
-  label = EXCLUDED.label,
-  line_color = EXCLUDED.line_color,
-  line_weight = EXCLUDED.line_weight,
-  dash_array = EXCLUDED.dash_array;
-
 -- 1) Trail segments
-INSERT INTO map_trail_segments (
-    name,
-    status,
-    description,
-    legend_label,
-    is_public,
-    sort_index,
-    geojson
-) VALUES
+INSERT INTO map_trail_segments (name, status, description, is_public, sort_index, geojson) VALUES
   (
     'Existing Lakeside Trail',
     'existing',
     'Fully constructed sections that are open to the public year-round.',
-    'Existing Trail',
     TRUE,
     1,
     '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Existing Lakeside Trail"},"geometry":{"type":"LineString","coordinates":[[172.14,-43.68],[172.18,-43.7],[172.22,-43.71],[172.26,-43.73],[172.29,-43.74],[172.33,-43.75],[172.37,-43.76]]}}]}'::jsonb
@@ -40,7 +19,6 @@ INSERT INTO map_trail_segments (
     'Stage 1 – Lakeside Boardwalk',
     'stage-1',
     'Currently under construction with new boardwalks and upgraded surfacing.',
-    'Stage 1',
     TRUE,
     2,
     '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Stage 1 – Lakeside Boardwalk"},"geometry":{"type":"LineString","coordinates":[[172.37,-43.76],[172.41,-43.78],[172.45,-43.79],[172.49,-43.81]]}}]}'::jsonb
@@ -49,7 +27,6 @@ INSERT INTO map_trail_segments (
     'Stage 2 – Coastal Wetland',
     'stage-2',
     'Future section pending consents; alignment may change following consultation.',
-    'Stage 2',
     TRUE,
     3,
     '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Stage 2 – Coastal Wetland"},"geometry":{"type":"LineString","coordinates":[[172.49,-43.81],[172.53,-43.83],[172.57,-43.84],[172.61,-43.86]]}}]}'::jsonb
@@ -58,7 +35,6 @@ INSERT INTO map_trail_segments (
     'Wetland Discovery Loop',
     'stage-2',
     'Concept-only loop through new wetland plantings. Hidden from public map until confirmed.',
-    'Future Wetland Loop',
     FALSE,
     4,
     '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Wetland Discovery Loop"},"geometry":{"type":"LineString","coordinates":[[172.3,-43.74],[172.32,-43.73],[172.35,-43.72],[172.33,-43.71],[172.3,-43.72]]}}]}'::jsonb

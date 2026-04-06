@@ -243,7 +243,6 @@ export default function InteractiveMapEditor() {
         category_id: "",
         is_public: true,
         status: DEFAULT_TRAIL_STATUS,
-        legend_label: "",
       },
     });
     setTrailGeometry(null);
@@ -263,7 +262,6 @@ export default function InteractiveMapEditor() {
         name: "",
         description: "",
         status: DEFAULT_TRAIL_STATUS,
-        legend_label: "",
         is_public: true,
       },
     });
@@ -285,7 +283,6 @@ export default function InteractiveMapEditor() {
       name: formData.name.trim(),
       status: formData.status || DEFAULT_TRAIL_STATUS,
       description: formData.description?.trim() || null,
-      legend_label: formData.legend_label?.trim() || null,
       is_public: formData.is_public,
       geojson: drawnTrail,
       ...(!isUpdating && { sort_index: 0 }),
@@ -371,7 +368,6 @@ export default function InteractiveMapEditor() {
       name: trail.name || "",
       description: trail.description || "",
       status: trail.status || DEFAULT_TRAIL_STATUS,
-      legend_label: trail.legendLabel || "",
       is_public: trail.isPublic !== false,
     }));
 
@@ -426,7 +422,6 @@ export default function InteractiveMapEditor() {
         category_id: categoryId,
         is_public: poi.isPublic !== false,
         status: DEFAULT_TRAIL_STATUS,
-        legend_label: "",
       },
     });
     setTrailGeometry(null);

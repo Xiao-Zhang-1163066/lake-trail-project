@@ -8,7 +8,6 @@ const initialFormData = {
   category_id: "",
   is_public: true,
   status: DEFAULT_TRAIL_STATUS,
-  legend_label: "",
 };
 
 const initialState = {

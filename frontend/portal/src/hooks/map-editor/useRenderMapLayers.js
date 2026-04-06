@@ -4,6 +4,7 @@ import { hasCoordinates } from "../../utils/mapEditor/geojson";
 import { buildTrailLegendItems } from "../../utils/mapEditor/trailLegend";
 import { createMarkerIcon } from "../../utils/mapEditor/markerIcon";
 import { categoryColors } from "../../constants/poiCategories";
+import { getStatusStyle } from "../../constants/trailStatuses";
 
 export function useRenderMapLayers({
   mapInstanceRef,
@@ -51,14 +52,15 @@ export function useRenderMapLayers({
       trails.forEach((trail) => {
         if (!hasCoordinates(trail.geojson)) return;
 
-        const baseWeight = trail.style?.weight || 3;
+        const trailStyle = getStatusStyle(trail.status);
+        const baseWeight = trailStyle.weight || 3;
         const isActive = activeTrail?.id === trail.id;
 
         const geoLayer = L.geoJSON(trail.geojson, {
           style: {
-            color: trail.style?.color || "#3B82F6",
+            color: trailStyle.color || "#3B82F6",
             weight: isActive ? baseWeight + 2 : baseWeight,
-            dashArray: trail.style?.dashArray || null,
+            dashArray: trailStyle.dashArray || null,
             opacity: trail.isPublic ? 1 : 0.45,
           },
         });

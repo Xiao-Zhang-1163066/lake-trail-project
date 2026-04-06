@@ -37,22 +37,7 @@ export function useMapData() {
       setPois(poisData.pois || []);
       const segments = trailsData.segments || [];
       setTrails(segments);
-
-      const legendItems = buildTrailLegendItems(segments);
-      if (legendItems.length) {
-        setTrailLegendItems(legendItems);
-      } else if (Array.isArray(trailsData.legend)) {
-        setTrailLegendItems(
-          trailsData.legend.map((item) => ({
-            id: item.id || item.label,
-            label: item.label,
-            color: item.color,
-            dashArray: item.dashArray ?? item.dasharray ?? null,
-          })),
-        );
-      } else {
-        setTrailLegendItems([]);
-      }
+      setTrailLegendItems(buildTrailLegendItems(segments));
 
       setCategories(poisData.categories || []);
 
@@ -82,8 +67,6 @@ export function useMapData() {
     } finally {
       if (mountedRef.current) setLoading(false);
     }
-    // All setState deps are stable — safe to omit
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

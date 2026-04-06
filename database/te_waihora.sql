@@ -44,20 +44,11 @@ CREATE INDEX IF NOT EXISTS idx_project_updates_published
 
 -- Public map data ------------------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS map_trail_status_styles (
-    status            TEXT PRIMARY KEY,
-    label             TEXT NOT NULL,
-    line_color        TEXT NOT NULL,
-    line_weight       INTEGER NOT NULL DEFAULT 4,
-    dash_array        TEXT
-);
-
 CREATE TABLE IF NOT EXISTS map_trail_segments (
     id                BIGSERIAL PRIMARY KEY,
     name              TEXT NOT NULL,
-    status            TEXT NOT NULL REFERENCES map_trail_status_styles(status),
+    status            TEXT NOT NULL,
     description       TEXT,
-    legend_label      TEXT,
     is_public         BOOLEAN NOT NULL DEFAULT TRUE,
     sort_index        INTEGER NOT NULL DEFAULT 0,
     geojson           JSONB NOT NULL
@@ -88,16 +79,6 @@ CREATE TABLE IF NOT EXISTS map_points_of_interest (
 
 CREATE INDEX IF NOT EXISTS idx_map_poi_category ON map_points_of_interest (category_id);
 CREATE INDEX IF NOT EXISTS idx_map_poi_visibility ON map_points_of_interest (is_public);
-
-INSERT INTO map_trail_status_styles (status, label, line_color, line_weight, dash_array) VALUES
-    ('stage-1', 'Stage 1', '#2563eb', 5, NULL),
-    ('stage-2', 'Stage 2', '#2563eb', 5, '8 6'),
-    ('existing', 'Existing Trail', '#0f766e', 5, NULL)
-ON CONFLICT (status) DO UPDATE SET
-    label = EXCLUDED.label,
-    line_color = EXCLUDED.line_color,
-    line_weight = EXCLUDED.line_weight,
-    dash_array = EXCLUDED.dash_array;
 
 -- Volunteer registrations & events ------------------------------------------
 

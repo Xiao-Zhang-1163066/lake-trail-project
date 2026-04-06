@@ -134,7 +134,6 @@ def create_admin_trail(payload: dict) -> dict:
             geojson=geojson,
             status=status,
             description=payload.get("description"),
-            legend_label=payload.get("legend_label"),
             is_public=payload.get("is_public", True),
             sort_index=payload.get("sort_index", 0),
         )
@@ -165,8 +164,6 @@ def update_admin_trail(trail_id: int, payload: dict) -> dict:
         kwargs["status"] = payload["status"]
     if "description" in payload:
         kwargs["description"] = payload["description"]
-    if "legend_label" in payload:
-        kwargs["legend_label"] = payload["legend_label"]
     if "is_public" in payload:
         kwargs["is_public"] = bool(payload["is_public"])
     if "sort_index" in payload:

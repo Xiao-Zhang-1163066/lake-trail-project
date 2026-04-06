@@ -27,7 +27,7 @@ export default function TrailDetailsPanel({
         >
           <div className="absolute inset-0 flex items-center justify-between px-5">
             <span className="text-xs font-semibold uppercase tracking-wide text-white/90">
-              {activeTrail.statusLabel || activeTrailStyle?.label || activeTrail.status}
+              {activeTrailStyle?.label || activeTrail.status}
             </span>
             <button
               type="button"
@@ -57,11 +57,6 @@ export default function TrailDetailsPanel({
               </button>
             </div>
             <h3 className="text-xl font-semibold text-gray-900">{activeTrail.name}</h3>
-            {activeTrail.legendLabel && (
-              <div className="text-xs text-gray-500">
-                Legend label: {activeTrail.legendLabel}
-              </div>
-            )}
           </div>
 
           <p className="text-sm text-gray-600">
@@ -71,7 +66,7 @@ export default function TrailDetailsPanel({
           <div className="space-y-1 text-xs text-gray-500">
             <div>
               <span className="font-semibold text-gray-600">Status:</span>{" "}
-              {activeTrail.statusLabel || activeTrailStyle?.label || activeTrail.status}
+              {activeTrailStyle?.label || activeTrail.status}
             </div>
             <div>
               <span className="font-semibold text-gray-600">Visibility:</span>{" "}

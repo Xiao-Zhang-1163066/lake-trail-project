@@ -18,7 +18,6 @@ export default function TrailManager() {
     name: "",
     status: DEFAULT_TRAIL_STATUS,
     description: "",
-    legend_label: "",
     is_public: true,
     geojson: "",
   });
@@ -47,7 +46,6 @@ export default function TrailManager() {
       name: trail.name || "",
       status: trail.status || DEFAULT_TRAIL_STATUS,
       description: trail.description || "",
-      legend_label: trail.legendLabel || "",
       is_public: trail.isPublic !== false,
       geojson: JSON.stringify(trail.geojson, null, 2) || "",
     });
@@ -61,7 +59,6 @@ export default function TrailManager() {
       name: "",
       status: DEFAULT_TRAIL_STATUS,
       description: "",
-      legend_label: "",
       is_public: true,
       geojson: "",
     });
@@ -78,7 +75,6 @@ export default function TrailManager() {
       name: "",
       status: DEFAULT_TRAIL_STATUS,
       description: "",
-      legend_label: "",
       is_public: true,
       geojson: "",
     });
@@ -167,7 +163,6 @@ export default function TrailManager() {
               <tr>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Legend Label</th>
                 <th className="px-4 py-3">Visibility</th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -176,7 +171,7 @@ export default function TrailManager() {
               {trails.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="5"
+                    colSpan="4"
                     className="px-4 py-8 text-center text-gray-500"
                   >
                     No trail sections found. Click "Add Track" to create one.
@@ -190,10 +185,8 @@ export default function TrailManager() {
                         <div
                           className="w-8 h-1 rounded"
                           style={{
-                            backgroundColor: trail.style?.color || "#3B82F6",
-                            borderStyle: trail.style?.dashArray
-                              ? "dashed"
-                              : "solid",
+                            backgroundColor: getStatusStyle(trail.status).color || "#3B82F6",
+                            borderStyle: getStatusStyle(trail.status).dashArray ? "dashed" : "solid",
                           }}
                         />
                         <span className="font-medium">{trail.name}</span>
@@ -201,9 +194,6 @@ export default function TrailManager() {
                     </td>
                     <td className="px-4 py-3">
                       {getStatusBadge(trail.status)}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {trail.legendLabel || "—"}
                     </td>
                     <td className="px-4 py-3">
                       <span

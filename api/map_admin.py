@@ -126,27 +126,10 @@ def _normalize_trail_status(value: str | None) -> str:
     return normalized
 
 
-def _fetch_status_style(status: str) -> dict:
-    style_row = db_fetch_one(
-        """
-        SELECT status, label, line_color, line_weight, dash_array
-        FROM map_trail_status_styles
-        WHERE status = %s
-        """,
-        (status,),
-    )
-    if not style_row:
-        raise MapAdminError(f"Style configuration for status {status!r} not found")
-    return style_row
-
-
-def _format_trail_record(row: dict, status_style: dict | None = None) -> dict:
-    """Normalize a raw trail row (and style) into the API-friendly shape."""
+def _format_trail_record(row: dict) -> dict:
+    """Normalize a raw trail row into the API-friendly shape."""
     if row is None:
         raise MapAdminError("Trail data is missing")
-
-    status = row["status"]
-    style_info = status_style or _fetch_status_style(status)
 
     raw_geojson = row.get("geojson")
     if isinstance(raw_geojson, str):
@@ -157,23 +140,13 @@ def _format_trail_record(row: dict, status_style: dict | None = None) -> dict:
     else:
         geojson = raw_geojson
 
-    style = {
-        "color": style_info["line_color"],
-        "weight": style_info["line_weight"],
-    }
-    if style_info.get("dash_array"):
-        style["dashArray"] = style_info["dash_array"]
-
     return {
         "id": str(row["id"]),
         "name": row["name"],
-        "status": status,
+        "status": row["status"],
         "description": row.get("description"),
-        "legendLabel": row.get("legend_label"),
         "isPublic": row.get("is_public", True),
         "sortIndex": row.get("sort_index", 0),
-        "style": style,
-        "statusLabel": style_info["label"],
         "geojson": geojson or {},
     }
 
@@ -183,65 +156,33 @@ def create_trail(
     geojson: dict,
     status: str,
     description: str | None = None,
-    legend_label: str | None = None,
     is_public: bool = True,
     sort_index: int = 0,
 ) -> dict:
-    """
-    Create a new trail segment and return it.
-    
-    Args:
-        name: The name of the trail segment
-        geojson: The GeoJSON data for the trail path
-        status: Trail status (stage-1, stage-2, existing)
-        description: Optional description
-        legend_label: Optional label for map legend
-        is_public: Whether the trail is visible to public
-        sort_index: Sort order
-    
-    Returns:
-        The created trail as a dict
-    
-    Raises:
-        MapAdminError: If database is not configured or operation fails
-    """
+    """Create a new trail segment and return it."""
     _ensure_db_enabled()
-    
-    normalized_status = _normalize_trail_status(status)
-    status_style = _fetch_status_style(normalized_status)
 
-    # Convert dicts to JSON strings for PostgreSQL JSONB
+    normalized_status = _normalize_trail_status(status)
     geojson_str = json.dumps(geojson) if isinstance(geojson, dict) else geojson
-    
-    # Insert the trail
+
     with get_db_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
                 """
                 INSERT INTO map_trail_segments (
-                    name, status, description, legend_label, is_public, sort_index,
-                    geojson
+                    name, status, description, is_public, sort_index, geojson
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb)
-                RETURNING id, name, status, description, legend_label, is_public,
-                          sort_index, geojson
+                VALUES (%s, %s, %s, %s, %s, %s::jsonb)
+                RETURNING id, name, status, description, is_public, sort_index, geojson
                 """,
-                (
-                    name,
-                    normalized_status,
-                    description,
-                    legend_label,
-                    is_public,
-                    sort_index,
-                    geojson_str,
-                ),
+                (name, normalized_status, description, is_public, sort_index, geojson_str),
             )
             row = cursor.fetchone()
-    
+
     if not row:
         raise MapAdminError("Failed to create trail")
-    
-    return _format_trail_record(row, status_style)
+
+    return _format_trail_record(row)
 
 
 def update_trail(
@@ -250,7 +191,6 @@ def update_trail(
     name: str | None = None,
     status: str | None = None,
     description: str | None = None,
-    legend_label: str | None = None,
     is_public: bool | None = None,
     sort_index: int | None = None,
     geojson: dict | list | str | None = None,
@@ -267,25 +207,18 @@ def update_trail(
 
     updates: list[str] = []
     params: list[Any] = []
-    status_style: dict | None = None
 
     if name is not None:
         updates.append("name = %s")
         params.append(name)
 
     if status is not None:
-        normalized_status = _normalize_trail_status(status)
         updates.append("status = %s")
-        params.append(normalized_status)
-        status_style = _fetch_status_style(normalized_status)
+        params.append(_normalize_trail_status(status))
 
     if description is not None:
         updates.append("description = %s")
         params.append(description)
-
-    if legend_label is not None:
-        updates.append("legend_label = %s")
-        params.append(legend_label)
 
     if is_public is not None:
         updates.append("is_public = %s")
@@ -297,9 +230,7 @@ def update_trail(
 
     if geojson is not None:
         geojson_str = (
-            json.dumps(geojson)
-            if isinstance(geojson, (dict, list))
-            else geojson
+            json.dumps(geojson) if isinstance(geojson, (dict, list)) else geojson
         )
         updates.append("geojson = %s::jsonb")
         params.append(geojson_str)
@@ -316,8 +247,7 @@ def update_trail(
                 UPDATE map_trail_segments
                 SET {", ".join(updates)}
                 WHERE id = %s
-                RETURNING id, name, status, description, legend_label, is_public,
-                          sort_index, geojson
+                RETURNING id, name, status, description, is_public, sort_index, geojson
                 """,
                 tuple(params),
             )
@@ -326,10 +256,7 @@ def update_trail(
     if not row:
         raise MapAdminError("Failed to update trail")
 
-    if status_style is None:
-        status_style = _fetch_status_style(row["status"])
-
-    return _format_trail_record(row, status_style)
+    return _format_trail_record(row)
 
 
 def delete_trail(trail_id: int) -> dict:
@@ -364,15 +291,7 @@ def get_trail_by_id(trail_id: int) -> dict | None:
 
     row = db_fetch_one(
         """
-        SELECT
-            id,
-            name,
-            status,
-            description,
-            legend_label,
-            is_public,
-            sort_index,
-            geojson
+        SELECT id, name, status, description, is_public, sort_index, geojson
         FROM map_trail_segments
         WHERE id = %s
         """,
