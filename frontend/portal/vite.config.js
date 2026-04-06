@@ -13,4 +13,9 @@ export default defineConfig({
   base: "/portal/",
   // Use the parent public directory for shared assets
   publicDir: resolve(__dirname, "../public"),
+  server: {
+    proxy: {
+      "/api": "http://localhost:7071",
+    },
+  },
 });
