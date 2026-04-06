@@ -22,7 +22,6 @@ export function useRenderMapLayers({
   setEditingPoiId,
   setActiveTrail,
   setMode,
-  setShowForm,
   setSelectedLocation,
   setEditingTrailId,
   setTrailGeometry,
@@ -73,7 +72,6 @@ export function useRenderMapLayers({
           setEditingPoiId(null);
           setActiveTrail(trail);
           setMode(null);
-          setShowForm(false);
           setSelectedLocation(null);
           setEditingTrailId(null);
           setTrailGeometry(null);
@@ -150,7 +148,6 @@ export function useRenderMapLayers({
           map.panTo([poi.lat, poi.lng], { animate: true });
           setActivePoi(poi);
           setActiveTrail(null);
-          setShowForm(false);
           setEditingPoiId(null);
           setEditingTrailId(null);
           setTrailDeletingId(null);
@@ -192,7 +189,6 @@ export function useRenderMapLayers({
     setEditingPoiId,
     setActiveTrail,
     setMode,
-    setShowForm,
     setSelectedLocation,
     setEditingTrailId,
     setTrailGeometry,

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useMemo } from "react";
+import React, { useCallback, useRef, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import "./map-editor/mapEditor.css";
@@ -36,18 +36,16 @@ export default function InteractiveMapEditor() {
   const {
     mode,
     setMode,
-    showForm,
-    setShowForm,
     drawnTrail,
     setDrawnTrail,
-    activePoi,
-    setActivePoi,
+    activePoiId,
+    setActivePoiId,
     editingPoiId,
     setEditingPoiId,
     poiDeletingId,
     setPoiDeletingId,
-    activeTrail,
-    setActiveTrail,
+    activeTrailId,
+    setActiveTrailId,
     editingTrailId,
     setEditingTrailId,
     trailDeletingId,
@@ -60,6 +58,15 @@ export default function InteractiveMapEditor() {
     setFormData,
     patchUiState,
   } = useMapEditorUiState();
+
+  // ── Derived state ────────────────────────────────────────────────────────────
+  const showForm = mode !== null;
+  const activePoi = useMemo(() => pois.find((p) => p.id === activePoiId) ?? null, [pois, activePoiId]);
+  const activeTrail = useMemo(() => trails.find((t) => t.id === activeTrailId) ?? null, [trails, activeTrailId]);
+
+  // Adapter setters — hooks expect object-based API, state stores IDs
+  const setActivePoi = useCallback((poi) => setActivePoiId(poi?.id ?? null), [setActivePoiId]);
+  const setActiveTrail = useCallback((trail) => setActiveTrailId(trail?.id ?? null), [setActiveTrailId]);
 
   // ── Leaflet imperative handles ───────────────────────────────────────────────
   const mapRef = useRef(null);
@@ -75,22 +82,6 @@ export default function InteractiveMapEditor() {
   const selectedTrailStyle = getStatusStyle(formData.status);
   const activeTrailStyle = activeTrail ? getStatusStyle(activeTrail.status) : null;
   const activeTrailAccent = activeTrailStyle?.color || "#2563eb";
-
-  // Sync active items when data refreshes after save/delete
-  // (stores only ID in state would be cleaner, but avoids a larger refactor)
-  useEffect(() => {
-    if (!activePoi) return;
-    const next = pois.find((p) => p.id === activePoi.id);
-    if (!next) { setActivePoi(null); return; }
-    if (next !== activePoi) setActivePoi(next);
-  }, [pois]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (!activeTrail) return;
-    const next = trails.find((t) => t.id === activeTrail.id);
-    if (!next) { setActiveTrail(null); return; }
-    if (next !== activeTrail) setActiveTrail(next);
-  }, [trails]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const categoryLabelMap = useMemo(() => {
     const map = {};
@@ -171,8 +162,6 @@ export default function InteractiveMapEditor() {
     setActivePoi,
     setActiveTrail,
     setSelectedLocation,
-    setFormData,
-    setShowForm,
     rebuildDrawnTrailFromLayers,
   });
 
@@ -192,7 +181,6 @@ export default function InteractiveMapEditor() {
     setEditingPoiId,
     setActiveTrail,
     setMode,
-    setShowForm,
     setSelectedLocation,
     setEditingTrailId,
     setTrailGeometry,
@@ -216,9 +204,8 @@ export default function InteractiveMapEditor() {
     setTrailGeometry(null);
     patchUiState({
       mode: null,
-      showForm: false,
-      activePoi: null,
-      activeTrail: null,
+      activePoiId: null,
+      activeTrailId: null,
       editingPoiId: null,
       editingTrailId: null,
       trailDeletingId: null,
@@ -228,16 +215,14 @@ export default function InteractiveMapEditor() {
 
   const handleStartAddPOI = useCallback(() => {
     patchUiState({
-      activePoi: null,
-      activeTrail: null,
+      activePoiId: null,
+      activeTrailId: null,
       editingPoiId: null,
       editingTrailId: null,
       mode: "add-poi",
-      showForm: true,
       trailDeletingId: null,
       selectedLocation: null,
       formData: {
-        type: "poi",
         name: "",
         description: "",
         category_id: "",
@@ -250,15 +235,13 @@ export default function InteractiveMapEditor() {
 
   const handleStartAddTrail = useCallback(() => {
     patchUiState({
-      activePoi: null,
-      activeTrail: null,
+      activePoiId: null,
+      activeTrailId: null,
       editingPoiId: null,
       editingTrailId: null,
       trailDeletingId: null,
       mode: "add-trail",
-      showForm: true,
       formData: {
-        type: "trail",
         name: "",
         description: "",
         status: DEFAULT_TRAIL_STATUS,
@@ -354,10 +337,9 @@ export default function InteractiveMapEditor() {
     if (!trail) return;
     if (!token) { alert("You must be logged in to edit trails."); return; }
 
-    setActiveTrail(null);
-    setActivePoi(null);
+    setActiveTrailId(null);
+    setActivePoiId(null);
     setMode("add-trail");
-    setShowForm(true);
     focusTrailOnMap(trail);
     setEditingTrailId(trail.id);
     setTrailDeletingId(null);
@@ -375,7 +357,7 @@ export default function InteractiveMapEditor() {
     setTrailGeometry(existingGeo);
 
     document.getElementById("map-instruction")?.scrollIntoView({ behavior: "smooth" });
-  }, [token, setActiveTrail, setActivePoi, setMode, setShowForm, focusTrailOnMap, setEditingTrailId, setTrailDeletingId, setSubmitting, setFormData, setTrailGeometry]);
+  }, [token, setActiveTrailId, setActivePoiId, setMode, focusTrailOnMap, setEditingTrailId, setTrailDeletingId, setSubmitting, setFormData, setTrailGeometry]);
 
   const handleDeleteTrail = useCallback(async (trail) => {
     if (!trail) return;
@@ -407,16 +389,14 @@ export default function InteractiveMapEditor() {
     const hasCoords = poi.lat != null && poi.lat !== "" && poi.lng != null && poi.lng !== "";
 
     patchUiState({
-      activePoi: null,
-      activeTrail: null,
+      activePoiId: null,
+      activeTrailId: null,
       mode: "add-poi",
-      showForm: true,
       editingPoiId: poi.id,
       editingTrailId: null,
       trailDeletingId: null,
       selectedLocation: hasCoords ? { lat: Number(poi.lat), lng: Number(poi.lng) } : null,
       formData: {
-        type: "poi",
         name: poi.name || "",
         description: poi.description || "",
         category_id: categoryId,

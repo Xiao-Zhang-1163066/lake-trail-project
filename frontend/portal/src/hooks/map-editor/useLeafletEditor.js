@@ -16,8 +16,6 @@ export function useLeafletEditor({
   setActivePoi,
   setActiveTrail,
   setSelectedLocation,
-  setFormData,
-  setShowForm,
   rebuildDrawnTrailFromLayers,
 }) {
   const [isDrawReady, setIsDrawReady] = useState(false);
@@ -220,8 +218,6 @@ export function useLeafletEditor({
     const handleMapClick = (e) => {
       setActiveTrail(null);
       setSelectedLocation({ lat: e.latlng.lat, lng: e.latlng.lng });
-      setFormData((prev) => ({ ...prev, type: "poi" }));
-      setShowForm(true);
     };
 
     if (mode === "add-poi") {
@@ -233,7 +229,7 @@ export function useLeafletEditor({
     return () => {
       map.off("click", handleMapClick);
     };
-  }, [leafletRef, mapInstanceRef, mode, setActiveTrail, setFormData, setSelectedLocation, setShowForm]);
+  }, [leafletRef, mapInstanceRef, mode, setActiveTrail, setSelectedLocation]);
 
   // ── Dismiss active POI on map click ─────────────────────────────────────────
   useEffect(() => {

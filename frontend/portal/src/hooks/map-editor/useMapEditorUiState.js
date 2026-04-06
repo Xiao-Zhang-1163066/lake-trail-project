@@ -2,7 +2,6 @@ import { useMemo, useReducer } from "react";
 import { DEFAULT_TRAIL_STATUS } from "../../constants/trailStatuses";
 
 const initialFormData = {
-  type: "poi",
   name: "",
   description: "",
   category_id: "",
@@ -12,12 +11,11 @@ const initialFormData = {
 
 const initialState = {
   mode: null,
-  showForm: false,
   drawnTrail: null,
-  activePoi: null,
+  activePoiId: null,
   editingPoiId: null,
   poiDeletingId: null,
-  activeTrail: null,
+  activeTrailId: null,
   editingTrailId: null,
   trailDeletingId: null,
   selectedLocation: null,
@@ -61,12 +59,11 @@ export function useMapEditorUiState() {
   const setters = useMemo(
     () => ({
       setMode: createSetter("mode"),
-      setShowForm: createSetter("showForm"),
       setDrawnTrail: createSetter("drawnTrail"),
-      setActivePoi: createSetter("activePoi"),
+      setActivePoiId: createSetter("activePoiId"),
       setEditingPoiId: createSetter("editingPoiId"),
       setPoiDeletingId: createSetter("poiDeletingId"),
-      setActiveTrail: createSetter("activeTrail"),
+      setActiveTrailId: createSetter("activeTrailId"),
       setEditingTrailId: createSetter("editingTrailId"),
       setTrailDeletingId: createSetter("trailDeletingId"),
       setSelectedLocation: createSetter("selectedLocation"),
