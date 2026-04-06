@@ -5,7 +5,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-from database import db_fetch_all, db_fetch_one, db_execute
+from repositories.core import db_fetch_all, db_fetch_one, db_execute
 from config import SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, ADMIN_EMAIL
 from utils import format_timestamp
 

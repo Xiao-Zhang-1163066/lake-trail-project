@@ -8,9 +8,11 @@ import azure.functions as func
 from psycopg import errors as psycopg_errors
 
 from config import ADMIN_JWT_SECRET, ADMIN_JWT_EXP_MINUTES, ADMIN_JWT_ALGORITHM
-from database import (
+from repositories.core import (
     db_enabled,
     db_fetch_one,
+)
+from repositories.users import (
     db_row_to_user,
     find_user_by_email,
     find_user_by_id,

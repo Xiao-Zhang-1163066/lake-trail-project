@@ -2,7 +2,7 @@
 
 ## Overview
 
-Te Waihora Trail is a community project combining a public-facing marketing site, an administrative portal, and a serverless API. The portal lets authorised staff manage trail geometry (GeoJSON), points of interest, volunteer events, newsletter content, and gallery media. The backend is built with Azure Functions (Python) and persists data in a Supabase Postgres instance and Azure Blob/Supabase storage.
+Te Waihora Trail is a community project combining a public-facing marketing site, an administrative portal, and a serverless API. The portal lets authorised staff manage trail geometry (GeoJSON), points of interest, volunteer events, newsletter content, and gallery media. The backend is FastAPI hosted on Azure Functions (ASGI) and persists data in a Supabase Postgres instance and Azure Blob/Supabase storage.
 
 ## Repository layout
 
@@ -14,7 +14,7 @@ Te Waihora Trail is a community project combining a public-facing marketing site
 
 ## Prerequisites
 
-- Node.js 18.17+ (Vite 7 compatibility) and npm 9+
+- Node.js 20.10+ (Vite 7 compatibility) and npm 10+
 - Python 3.10 (matches `api/runtime.txt`)
 - Azure Functions Core Tools v4 for local API hosting (`npm install -g azure-functions-core-tools@4` or via Homebrew)
 - PostgreSQL client tools (`psql`) if you plan to apply the SQL scripts locally
@@ -22,13 +22,13 @@ Te Waihora Trail is a community project combining a public-facing marketing site
 
 ## Getting started
 
-### 1. Backend API (Azure Functions)
+### 1. Backend API (FastAPI on Azure Functions)
 
 ```bash
 python3.10 -m venv .venv
 source .venv/bin/activate        # On Windows use: .venv\Scripts\activate
-pip install -r requirements.txt
 cd api
+pip install -r requirements.txt
 ```
 
 1. Copy `local.settings.json` (do not commit secrets) and update every placeholder with your Supabase, database, SMTP, and storage credentials. The file is consumed automatically by Azure Functions when you run locally.
@@ -39,7 +39,7 @@ cd api
    func start
    ```
 
-   The API will be available at `http://localhost:7071/api/*`. CORS is preconfigured for `http://localhost:5173`, matching the Vite dev server.
+   The API will be available at `http://localhost:7071/api/*`. CORS is configured to allow all origins (`*`).
 
 ### 2. Admin portal (React + Vite)
 
@@ -67,13 +67,19 @@ The portal defaults to `http://localhost:5173`. Login and registration talk to t
 
 ### 3. Static marketing site
 
-The public site lives in `frontend/public`. During local development you can open `index.html` directly or serve the folder with any static file server. To publish alongside the portal build, run:
+The public site lives in `frontend/public`. During local development you can open `index.html` directly or serve the folder with any static file server:
 
 ```bash
-python3 -m http.server
+python3 -m http.server -d frontend/public
 ```
 
-from `frontend/portal`; the build output will include the SPA. Serve `frontend/public` separately if you need to mirror the production structure.
+For a production-like preview, build the portal first. The Vite config sets `publicDir` to `../public`, so `npm run build` copies all of `frontend/public` into the portal `dist/` root alongside the SPA at `/portal/`. Serve the combined output with:
+
+```bash
+cd frontend/portal
+npm run build
+python3 -m http.server -d dist
+```
 
 ## Environment configuration
 
