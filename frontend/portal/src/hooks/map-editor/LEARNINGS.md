@@ -37,3 +37,6 @@ A: This is the functional update pattern. If `setFormData` is inside a `useCallb
 
 Q: When would you choose `useReducer` over multiple `useState` calls?
 A: When multiple pieces of state change together as part of the same action. If you find yourself calling `setX`, `setY`, `setZ` in sequence for the same event, that's a sign the state belongs in a reducer where one dispatch handles all three atomically.
+
+Q: What is a stale closure, and how do you fix it?
+A: A stale closure happens when a function created by `useCallback` captures a variable (e.g. `formData`) at the time it was created, and that variable later changes — but the function is never recreated because of its dependency array. The function is now working with an outdated value. The fix is the functional update pattern: instead of reading the variable from the closure (`setFormData({ ...formData })`), you pass a function to the setter (`setFormData(prev => ({ ...prev }))`). The `prev` argument is handed to you directly by the reducer, bypassing the closure entirely.
