@@ -26,7 +26,6 @@ export default function CategoryFilters({
         {categories.map((category) => {
           const slug = category.slug || category.icon || String(category.id);
           const iconPath =
-            categoryIconPathMap[category.id] ||
             categoryIconPathMap[slug] ||
             getAssetUrl("/assets/icons/categories/default.svg");
           const accent = categoryColors[slug] || "#1fa74d";

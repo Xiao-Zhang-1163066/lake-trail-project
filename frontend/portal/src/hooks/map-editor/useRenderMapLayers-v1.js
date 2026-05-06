@@ -29,11 +29,11 @@ export function useRenderMapLayers({
 }) {
   useEffect(() => {
     if (!mapInstanceRef.current) return;
-    // Dynamically import Leaflet to avoid SSR issues and reduce initial bundle size
-    import("leaflet").then((mod) => {
-      const L = mod.default;
+
+    import("leaflet").then((L) => {
       const map = mapInstanceRef.current;
-      // Step1: Clear existing POI/trail layers, preserve tile layer and draw feature group
+
+      // Remove existing POI/trail layers, preserve tile layer and draw feature group
       map.eachLayer((layer) => {
         if (layer instanceof L.TileLayer) return;
         if (layer === drawnLayersRef.current) return;
@@ -46,29 +46,28 @@ export function useRenderMapLayers({
           map.removeLayer(layer);
         }
       });
-      // Step2: Render trail polylines
+
+      // Render trail polylines
       trails.forEach((trail) => {
         if (!hasCoordinates(trail.geojson)) return;
+
         const trailStyle = getStatusStyle(trail.status);
+        const baseWeight = trailStyle.weight || 3;
         const isActive = activeTrail?.id === trail.id;
+
         const geoLayer = L.geoJSON(trail.geojson, {
           style: {
             color: trailStyle.color || "#3B82F6",
-            // Active trail gets a thicker line to stand out
-            weight: isActive
-              ? (trailStyle.weight || 3) + 2
-              : trailStyle.weight || 3,
+            weight: isActive ? baseWeight + 2 : baseWeight,
             dashArray: trailStyle.dashArray || null,
             opacity: trail.isPublic ? 1 : 0.45,
           },
         });
-        geoLayer.on("click", () => {
-          if (mode !== null) return; // form is open — ignore clicks
-          L.DomEvent.stop(event); // prevent the map click from also firing
-          const bounds = geoLayer.getBounds?.(); // Get bounds before setting active trail, as that may cause a re-render and remove the layer before we can get bounds
-          if (bounds?.isValid?.())
-            // Fit map to trail bounds with some padding, but only if the trail isn't already active (i.e. we just want to zoom in when first clicking a trail, not every time we click on it)
-            map.fitBounds(bounds.pad(0.3)); // Add padding to bounds so trail isn't right at the edge of the screen
+
+        geoLayer.on("click", (event) => {
+          L.DomEvent.stop(event);
+          const bounds = geoLayer.getBounds?.();
+          if (bounds?.isValid?.()) map.fitBounds(bounds.pad(0.05));
           setActivePoi(null);
           setEditingPoiId(null);
           setActiveTrail(trail);
@@ -79,31 +78,26 @@ export function useRenderMapLayers({
           setTrailDeletingId(null);
         });
 
-        geoLayer.on("mouseover", () => {
-          map.getContainer().style.cursor = "pointer";
-        });
-        geoLayer.on("mouseout", () => {
-          map.getContainer().style.cursor = "";
-        });
+        geoLayer.on("mouseover", () => { map.getContainer().style.cursor = "pointer"; });
+        geoLayer.on("mouseout", () => { map.getContainer().style.cursor = ""; });
 
         geoLayer.addTo(map);
 
-        // If this trail is active, bring its layer to the front so it stands out more
         if (isActive) {
           geoLayer.eachLayer((child) => child.bringToFront?.());
         }
       });
 
-      // ── Step 3: render the legend
+      // Render trail legend
       const legendContainer = legendContainerRef.current;
       if (legendContainer) {
         const legendSource =
           Array.isArray(trailLegendItems) && trailLegendItems.length
             ? trailLegendItems
-            : buildTrailLegendItems(trails); // Fallback to building legend items from trails if not provided (e.g. on initial load before categories/trails are loaded)
-        // Clear existing legend content
+            : buildTrailLegendItems(trails);
+
         legendContainer.innerHTML = "";
-        // Create legend items
+
         if (legendSource.length) {
           legendContainer.style.display = "block";
 
@@ -124,7 +118,7 @@ export function useRenderMapLayers({
 
             const label = document.createElement("span");
             label.className = "map-legend__label";
-            label.textContent = item.label || "Trail";
+            label.textContent = item.label || item.id || "Trail";
             row.appendChild(label);
 
             legendContainer.appendChild(row);
@@ -134,13 +128,13 @@ export function useRenderMapLayers({
         }
       }
 
-      // Step4: Render POI markers
-      const defaultIconUrl = getAssetUrl(
-        "/assets/icons/categories/default.svg",
-      );
+      // Render POI markers
+      const defaultIconUrl = getAssetUrl("/assets/icons/categories/default.svg");
+
       pois.forEach((poi) => {
-        if (!categoryFilters[poi.category]) return; // filtered out
-        if (!poi.lat || !poi.lng) return; // no coordinates
+        if (!categoryFilters[poi.category]) return;
+        if (!poi.lat || !poi.lng) return;
+
         const accent = categoryColors[poi.category] || "#1fa74d";
         const iconPath = categoryIconPathMap[poi.category] || defaultIconUrl;
 
@@ -151,9 +145,7 @@ export function useRenderMapLayers({
         }).addTo(map);
 
         marker.on("click", () => {
-          if (mode !== null) return; // form is open — ignore clicks
           map.panTo([poi.lat, poi.lng], { animate: true });
-          // Clicking a marker: select it and clear everything else
           setActivePoi(poi);
           setActiveTrail(null);
           setEditingPoiId(null);
@@ -165,22 +157,22 @@ export function useRenderMapLayers({
         });
       });
 
-      // ── Step 5: temp marker for new POI placement
+      // Temporary marker for new POI placement
       if (selectedLocation && mode === "add-poi") {
         const tempIcon = L.icon({
           iconUrl: getAssetUrl("/assets/icons/temp-poi-marker.svg"),
           iconSize: [36, 50],
           iconAnchor: [18, 46],
+          popupAnchor: [0, -46],
         });
         L.marker([selectedLocation.lat, selectedLocation.lng], {
           icon: tempIcon,
+          riseOnHover: true,
         })
           .addTo(map)
           .bindPopup("📍 New POI location");
       }
     });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     pois,
     trails,
@@ -190,5 +182,16 @@ export function useRenderMapLayers({
     trailLegendItems,
     activeTrail,
     mode,
-  ]); // setters and refs are stable — intentionally omitted
+    mapInstanceRef,
+    drawnLayersRef,
+    legendContainerRef,
+    setActivePoi,
+    setEditingPoiId,
+    setActiveTrail,
+    setMode,
+    setSelectedLocation,
+    setEditingTrailId,
+    setTrailGeometry,
+    setTrailDeletingId,
+  ]);
 }

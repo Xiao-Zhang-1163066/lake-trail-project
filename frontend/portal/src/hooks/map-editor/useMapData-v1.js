@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { fetchPublicMapData } from "../../services/mapAdminApi";
 import { getAssetUrl } from "../../utils/mapEditor/assetUrl";
+import { buildTrailLegendItems } from "../../utils/mapEditor/trailLegend";
+import { fetchPublicMapData } from "../../services/mapAdminApi";
+
 /**
  * Manages the map's server-side data: POIs, trail segments, categories,
  * derived lookup maps, and the loadMapData refresh function.
@@ -8,18 +10,18 @@ import { getAssetUrl } from "../../utils/mapEditor/assetUrl";
 export function useMapData() {
   const [pois, setPois] = useState([]);
   const [trails, setTrails] = useState([]);
+  const [trailLegendItems, setTrailLegendItems] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [categoryFilters, setCategoryFilters] = useState({});
   const [categoryIconPathMap, setCategoryIconPathMap] = useState({});
   const [categoryIdMap, setCategoryIdMap] = useState({});
-  const [loading, setLoading] = useState(true);
 
   // Track if the component is still mounted to avoid setting state on an unmounted component
   const mountedRef = useRef(true);
   // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
-    // The cleanup: don't clear data, just mark as unmounted to prevent state updates
     return () => {
       mountedRef.current = false;
     };
@@ -33,34 +35,32 @@ export function useMapData() {
       if (!mountedRef.current) return;
 
       setPois(poisData.pois || []);
-      setTrails(trailsData.segments || []);
+      const segments = trailsData.segments || [];
+      setTrails(segments);
+      setTrailLegendItems(buildTrailLegendItems(segments));
+
       setCategories(poisData.categories || []);
 
       // Build filter state and icon/id lookup maps from categories
-      // Build filter state: { toilets: true, carpark: true, ... }
-      // Every category starts visible (true)
       const filters = {};
-      (poisData.categories || []).forEach((cat) => {
-        const key = cat.slug || String(cat.id);
-        filters[key] = cat.defaultVisible !== false;
-      });
-      setCategoryFilters(filters);
-      // Build icon path map: { 1: "/assets/icons/toilet.svg", "toilets": "/assets/icons/toilet.svg", ... }
-      const iconPathMap = {};
+      const iconPathMapById = {};
+      const iconPathMapBySlug = {};
       const idMap = {};
+
       (poisData.categories || []).forEach((cat) => {
         const slug = cat.slug || cat.icon || String(cat.id);
         const iconPath = cat.iconPath
           ? getAssetUrl(cat.iconPath)
           : getAssetUrl("/assets/icons/categories/default.svg");
-        // Store icon path by both numeric id and slug so lookups work either way
 
-        iconPathMap[slug] = iconPath;
-        // Store category id by slug so we can reverse-lookup when editing a POI
+        filters[slug] = cat.defaultVisible !== false;
+        iconPathMapById[cat.id] = iconPath;
+        iconPathMapBySlug[slug] = iconPath;
         idMap[slug] = cat.id;
       });
 
-      setCategoryIconPathMap(iconPathMap);
+      setCategoryFilters(filters);
+      setCategoryIconPathMap({ ...iconPathMapById, ...iconPathMapBySlug });
       setCategoryIdMap(idMap);
     } catch (error) {
       if (mountedRef.current) console.error("Failed to load map data:", error);
@@ -76,12 +76,13 @@ export function useMapData() {
   return {
     pois,
     trails,
+    trailLegendItems,
     categories,
+    loading,
     categoryFilters,
     setCategoryFilters,
     categoryIconPathMap,
     categoryIdMap,
-    loading,
     loadMapData,
   };
 }
