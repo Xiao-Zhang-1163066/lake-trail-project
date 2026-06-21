@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from config import ALLOWED_ORIGINS
 from app.routers.auth import router as auth_router
 from app.routers.public import router as public_router
 from app.routers.volunteers import router as volunteers_router
@@ -18,7 +19,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="Te Waihora Trail API", version="1.0.0")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=ALLOWED_ORIGINS,
         allow_methods=["*"],
         allow_headers=["*"],
     )

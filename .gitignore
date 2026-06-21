@@ -36,6 +36,7 @@ local.settings.json
 
 build/
 .azure-cli/
-.github/workflows/
 
+# Generated portal build merged into the public site for deployment
+frontend/public/portal/
 
