@@ -35,6 +35,15 @@ USE_SUPABASE_GALLERY = bool(
     SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY and SUPABASE_GALLERY_BUCKET
 )
 
+# CORS configuration
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        "ALLOWED_ORIGINS", "http://localhost:5173"
+    ).split(",")
+    if origin.strip()
+]
+
 # Admin JWT configuration
 ADMIN_JWT_SECRET = os.environ.get("ADMIN_JWT_SECRET", "").strip()
 try:

@@ -1,0 +1,54 @@
+name: Deploy Portal + Public Site to Azure Static Web Apps
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/deploy-portal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-portal
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_BASE_URL: https://te-waihora-api-dyaqdzbbcngqcbfz.australiasoutheast-01.azurewebsites.net/api
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install portal dependencies
+        working-directory: frontend/portal
+        run: npm ci
+
+      - name: Build portal SPA
+        working-directory: frontend/portal
+        run: npm run build
+
+      - name: Merge portal build into public site
+        run: |
+          mkdir -p frontend/public/portal
+          rm -rf frontend/public/portal/*
+          cp -r frontend/portal/dist/. frontend/public/portal/
+
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: frontend/public
+          output_location: ""
+          skip_app_build: true
