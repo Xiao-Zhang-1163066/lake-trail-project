@@ -26,6 +26,7 @@ __pycache__/
 *.pyo
 *.pyd
 data/
+api/.python_packages/
 
 # Local settings (do not commit secrets)
 local.settings.json
