@@ -10,6 +10,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -86,6 +87,8 @@ export function AuthProvider({ children }) {
   // 操作状态：'idle'（空闲）或 'pending'（处理中）
   const [status, setStatus] = useState("idle");
 
+  const sessionExpiredHandling = useRef(false);
+
   /**
    * 应用会话状态
    * 更新 token 和 user，并持久化到 localStorage
@@ -126,11 +129,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   const handleSessionExpired = useCallback(
-    (message = "Session expired. Please log in again.") => {
+    () => {
+      if (sessionExpiredHandling.current) return;
+      sessionExpiredHandling.current = true;
       logout();
-      if (typeof window !== "undefined" && message) {
-        window.alert(message);
-      }
       redirectToLogin();
     },
     [logout, redirectToLogin]

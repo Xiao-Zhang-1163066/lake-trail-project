@@ -39,7 +39,7 @@ USE_SUPABASE_GALLERY = bool(
 ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get(
-        "ALLOWED_ORIGINS", "http://localhost:5173"
+        "ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:8080,https://witty-stone-00bf7ab00.7.azurestaticapps.net"
     ).split(",")
     if origin.strip()
 ]

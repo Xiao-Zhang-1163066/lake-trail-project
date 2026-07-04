@@ -7,7 +7,9 @@
   const portalBase = isLocal ? "http://localhost:5173/portal" : "/portal";
   // 配置 API 基础路径
   window.PUBLIC_CONFIG = {
-    API_BASE: isLocal ? "http://localhost:7071/api" : "/api",
+    API_BASE: isLocal
+      ? "http://localhost:7071/api"
+      : "https://te-waihora-api-dyaqdzbbcngqcbfz.australiasoutheast-01.azurewebsites.net/api",
     PORTAL_BASE: portalBase,
   };
 })();
